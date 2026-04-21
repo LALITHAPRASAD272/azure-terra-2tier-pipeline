@@ -31,15 +31,9 @@ stages:
         terraform -version
       displayName: "Install Terraform"
 
-    # Azure Login Check
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: 'azure-connection'
-        scriptType: bash
-        scriptLocation: inlineScript
-        inlineScript: |
-          az account show
-      displayName: "Azure Login Check"
+    - script: |
+        echo "Using Terraform Azure provider authentication only"
+      displayName: "Skip Azure CLI"
 
     # Terraform Init
     - script: terraform init
