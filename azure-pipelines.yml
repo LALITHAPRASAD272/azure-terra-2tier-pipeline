@@ -37,6 +37,7 @@ stages:
 
     # Terraform Init
     - script: terraform init
+      workingDirectory: "$(System.DefaultWorkingDirectory)"
       displayName: "Terraform Init"
 
     # Terraform Validate
@@ -49,10 +50,12 @@ stages:
           -var="admin_password=$(admin_password)" \
           -var="mysql_password=$(mysql_password)" \
           -out=tfplan
+      workingDirectory: "$(System.DefaultWorkingDirectory)"
       displayName: "Terraform Plan"
 
     # Terraform Apply
     - script: |
         terraform apply \
           -auto-approve tfplan
+      workingDirectory: "$(System.DefaultWorkingDirectory)"
       displayName: "Terraform Apply"
