@@ -31,11 +31,10 @@ stages:
       displayName: "Install Terraform"
 
     # =========================
-    # Terraform Init (WITH SERVICE CONNECTION)
+    # Terraform Init
     # =========================
     - script: |
-        terraform init \
-          -backend=false
+        terraform init
       workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
       displayName: "Terraform Init"
 
@@ -48,26 +47,33 @@ stages:
       displayName: "Terraform Validate"
 
     # =========================
-    # Terraform Plan (SERVICE CONNECTION AUTH FIX)
+    # Terraform Plan (SERVICE CONNECTION USED PROPERLY)
     # =========================
-    - script: |
-        export ARM_USE_MSI=false
-        export ARM_SUBSCRIPTION_ID: $(subscription_id)
-        export ARM_CLIENT_ID: $(client_id)
-        export ARM_CLIENT_SECRET: $(client_secret)
-        export ARM_TENANT_ID: $(tenant_id)
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'azure-connection'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "Logged in via Service Connection"
 
-        terraform plan \
-          -var="admin_password=$(admin_password)" \
-          -var="mysql_password=$(mysql_password)" \
-          -out=tfplan
-      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
+          cd $(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python
+
+          terraform plan \
+            -var="admin_password=$(admin_password)" \
+            -var="mysql_password=$(mysql_password)" \
+            -out=tfplan
       displayName: "Terraform Plan"
 
     # =========================
     # Terraform Apply
     # =========================
-    - script: |
-        terraform apply -auto-approve tfplan
-      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'azure-connection'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          cd $(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python
+          terraform apply -auto-approve tfplan
       displayName: "Terraform Apply"
