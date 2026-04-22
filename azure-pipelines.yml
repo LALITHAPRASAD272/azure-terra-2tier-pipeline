@@ -1,0 +1,62 @@
+trigger:
+- main
+
+pool:
+  name: prasadpool
+
+variables:
+#- group: terraform-secrets   # 🔐 from Library
+
+- name: TF_VERSION
+  value: '1.6.6'
+
+stages:
+
+- stage: Terraform
+  jobs:
+  - job: Deploy
+    steps:
+
+    # Install Terraform
+    - script: |
+        sudo apt update -y
+        sudo apt install -y unzip wget
+
+        wget https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+
+        unzip terraform_$(TF_VERSION)_linux_amd64.zip
+
+        sudo mv terraform /usr/local/bin/
+
+        terraform -version
+      displayName: "Install Terraform"
+
+    - script: |
+        echo "Using Terraform Azure provider authentication only"
+      displayName: "Skip Azure CLI"
+
+    # Terraform Init
+    - script: terraform init
+      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
+      displayName: "Terraform Init"
+
+    # Terraform Validate
+    - script: terraform validate
+      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
+      displayName: "Terraform Validate"
+
+    # Terraform Plan
+    - script: |
+        terraform plan \
+          -var="admin_password=$(admin_password)" \
+          -var="mysql_password=$(mysql_password)" \
+          -out=tfplan
+      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
+      displayName: "Terraform Plan"
+
+    # Terraform Apply
+    - script: |
+        terraform apply \
+          -auto-approve tfplan
+      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
+      displayName: "Terraform Apply"
