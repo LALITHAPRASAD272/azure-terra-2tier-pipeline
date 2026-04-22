@@ -37,11 +37,12 @@ stages:
 
     # Terraform Init
     - script: terraform init
-      workingDirectory: "$(System.DefaultWorkingDirectory)"
+      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
       displayName: "Terraform Init"
 
     # Terraform Validate
     - script: terraform validate
+      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
       displayName: "Terraform Validate"
 
     # Terraform Plan
@@ -50,12 +51,12 @@ stages:
           -var="admin_password=$(admin_password)" \
           -var="mysql_password=$(mysql_password)" \
           -out=tfplan
-      workingDirectory: "$(System.DefaultWorkingDirectory)"
+      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
       displayName: "Terraform Plan"
 
     # Terraform Apply
     - script: |
         terraform apply \
           -auto-approve tfplan
-      workingDirectory: "$(System.DefaultWorkingDirectory)"
+      workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
       displayName: "Terraform Apply"
