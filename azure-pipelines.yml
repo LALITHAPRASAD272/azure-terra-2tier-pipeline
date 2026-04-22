@@ -12,12 +12,8 @@ variables:
 stages:
 
 - stage: Terraform
-  displayName: "Terraform Deployment"
-
   jobs:
   - job: Deploy
-    displayName: "Terraform Job"
-
     steps:
 
     # =========================
@@ -35,10 +31,11 @@ stages:
       displayName: "Install Terraform"
 
     # =========================
-    # Terraform Init
+    # Terraform Init (WITH SERVICE CONNECTION)
     # =========================
     - script: |
-        terraform init
+        terraform init \
+          -backend=false
       workingDirectory: "$(System.DefaultWorkingDirectory)/azure-.2tier-terraform-python"
       displayName: "Terraform Init"
 
@@ -51,9 +48,15 @@ stages:
       displayName: "Terraform Validate"
 
     # =========================
-    # Terraform Plan
+    # Terraform Plan (SERVICE CONNECTION AUTH FIX)
     # =========================
     - script: |
+        export ARM_USE_MSI=false
+        export ARM_SUBSCRIPTION_ID=$(subscription_id)
+        export ARM_CLIENT_ID=$(client_id)
+        export ARM_CLIENT_SECRET=$(client_secret)
+        export ARM_TENANT_ID=$(tenant_id)
+
         terraform plan \
           -var="admin_password=$(admin_password)" \
           -var="mysql_password=$(mysql_password)" \
