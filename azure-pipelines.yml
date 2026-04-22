@@ -29,16 +29,7 @@ stages:
         terraform -version
       displayName: "Install Terraform"
 
-    # Azure Login (via Service Connection)
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: 'azure-connection'
-        scriptType: bash
-        scriptLocation: inlineScript
-        inlineScript: |
-          echo "Azure login successful"
-          az account show
-      displayName: "Azure Login"
+
 
     # Terraform Init
     - script: terraform init
